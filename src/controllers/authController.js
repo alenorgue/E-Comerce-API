@@ -111,3 +111,76 @@ export const tokenValidation = (req, res, next) => {
     next();
   });
 };
+
+export const getUserProfile = async (req, res) => {
+  try {
+    // Buscamos el usuario por ID
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const updateUserProfile = async (req, res) => {
+  const { name, email, phoneNumber } = req.body;
+
+  // Definimos el esquema de validación para actualizar el perfil
+  const updateSchema = Joi.object({
+    name: Joi.string().min(2).max(100),
+    email: Joi.string().email(),
+    phoneNumber: Joi.string().pattern(/^[0-9\-\+\s\(\)]{7,20}$/)
+  });
+
+  // Validamos los datos recibidos en la petición
+  const { error } = updateSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  // Verificamos si el usuario es administrador o si está modificando su propio perfil
+const userId = req.userId; // id del usuario autenticado
+const paramId = req.params.id; // id del perfil a modificar
+const user = await User.findById(userId);
+
+if (userId !== paramId && user.role !== 'admin') {
+  return res.status(403).json({ message: 'You can only modify your own profile.' });
+}
+  try {
+    // Actualizamos el usuario
+    const updatedUser = await User.findByIdAndUpdate(req.userId, { name, email, phoneNumber }, { new: true }).select('-password');
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const deleteUserProfile = async (req, res) => {
+const userId = req.userId; // id del usuario autenticado
+const paramId = req.params.id; // id del perfil a modificar
+
+// Busca el usuario autenticado en la base de datos
+const user = await User.findById(userId);
+
+if (userId !== paramId && user.role !== 'admin') {
+  return res.status(403).json({ message: 'You can only modify your own profile.' });
+}
+  try {
+    // Buscamos y eliminamos el usuario por ID
+    const user = await User.findByIdAndDelete(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
