@@ -142,16 +142,16 @@ export const updateUserProfile = async (req, res) => {
     return res.status(400).json({ message: error.details[0].message });
   }
   // Verificamos si el usuario es administrador o si está modificando su propio perfil
-const userId = req.userId; // id del usuario autenticado
-const paramId = req.params.id; // id del perfil a modificar
-const user = await User.findById(userId);
+  const userId = req.userId; // id del usuario autenticado
+  const paramId = req.params.id; // id del perfil a modificar
+  const user = await User.findById(userId);
 
-if (userId !== paramId && user.role !== 'admin') {
-  return res.status(403).json({ message: 'You can only modify your own profile.' });
-}
+  if (userId !== paramId && user.role !== 'admin') {
+    return res.status(403).json({ message: 'You can only modify your own profile.' });
+  }
   try {
-    // Actualizamos el usuario
-    const updatedUser = await User.findByIdAndUpdate(req.userId, { name, email, phoneNumber }, { new: true }).select('-password');
+    // Actualizamos el usuario objetivo (puede ser el propio o cualquier si es admin)
+    const updatedUser = await User.findByIdAndUpdate(paramId, { name, email, phoneNumber }, { new: true }).select('-password');
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -163,19 +163,19 @@ if (userId !== paramId && user.role !== 'admin') {
 };
 
 export const deleteUserProfile = async (req, res) => {
-const userId = req.userId; // id del usuario autenticado
-const paramId = req.params.id; // id del perfil a modificar
+  const userId = req.userId; // id del usuario autenticado
+  const paramId = req.params.id; // id del perfil a modificar
 
-// Busca el usuario autenticado en la base de datos
-const user = await User.findById(userId);
+  // Busca el usuario autenticado en la base de datos
+  const user = await User.findById(userId);
 
-if (userId !== paramId && user.role !== 'admin') {
-  return res.status(403).json({ message: 'You can only modify your own profile.' });
-}
+  if (userId !== paramId && user.role !== 'admin') {
+    return res.status(403).json({ message: 'You can only modify your own profile.' });
+  }
   try {
-    // Buscamos y eliminamos el usuario por ID
-    const user = await User.findByIdAndDelete(req.userId);
-    if (!user) {
+    // Buscamos y eliminamos el usuario objetivo (puede ser el propio o cualquier si es admin)
+    const deletedUser = await User.findByIdAndDelete(paramId);
+    if (!deletedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.status(200).json({ message: 'User deleted successfully' });
