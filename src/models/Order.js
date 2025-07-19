@@ -24,6 +24,11 @@ const orderSchema = new Schema({
     required: true,
     min: 0
   },
+  paymentMethod: {
+    type: String,
+    enum: ['credit_card', 'paypal', 'bank_transfer'],
+    required: true
+  },
   status: {
     type: String,
     enum: ['pending', 'completed', 'cancelled'],
