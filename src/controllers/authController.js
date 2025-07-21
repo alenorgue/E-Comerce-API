@@ -114,8 +114,10 @@ export const tokenValidation = (req, res, next) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    // Buscamos el usuario por ID
-    const user = await User.findById(req.userId).select('-password');
+    // Buscamos el usuario por ID y populamos las órdenes
+    const user = await User.findById(req.userId)
+      .select('-password')
+      .populate('orders');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

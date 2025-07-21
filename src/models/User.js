@@ -34,6 +34,10 @@ const userSchema = new Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  orders: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Order'
+}],
   createdAt: {
     type: Date,
     default: Date.now
