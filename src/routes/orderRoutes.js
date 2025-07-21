@@ -1,11 +1,14 @@
 import express from 'express';
 import { tokenValidation } from '../controllers/authController.js';
-import { createOrder, getOrders, getOrderById, cancelOrder } from '../controllers/orderController.js';
+import { getOrders, getOrderById, updateOrderStatus, cancelOrder } from '../controllers/orderController.js';
+import isAdmin from '../middlewares/isAdmin.js';
+import { processPaymentAndOrder } from '../controllers/paymentController.js';
+
 
 const router = express.Router();
 
 // Rutas protegidas (requieren autenticación)
-router.post('/checkout', tokenValidation, createOrder);
+router.post('/checkout', tokenValidation, processPaymentAndOrder);
 router.get('/orders', tokenValidation, getOrders);
 router.get('/orders/:id', tokenValidation, getOrderById);
 router.delete('/orders/:id/cancel', tokenValidation, cancelOrder);

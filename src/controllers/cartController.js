@@ -35,6 +35,8 @@ export const addProductToCart = async (req, res) => {
       cart.products.push({ productId: product._id, quantity });
     }
     cart.totalPrice += product.price * quantity;
+    // Evitar que el totalPrice sea negativo
+    if (cart.totalPrice < 0) cart.totalPrice = 0;
     await cart.save();
 
     res.status(201).json({ message: 'Product added to cart successfully', cart });
@@ -59,6 +61,8 @@ export const deleteProductFromCart = async (req, res) => {
     } 
     const product = cart.products[productIndex];
     cart.totalPrice -= product.quantity * (await Product.findById(product.productId)).price;
+    // Evitar que el totalPrice sea negativo
+    if (cart.totalPrice < 0) cart.totalPrice = 0;
     cart.products.splice(productIndex, 1);
     await cart.save();
     res.status(200).json({ message: 'Product removed from cart successfully', cart });
@@ -129,6 +133,8 @@ export const updateProductQuantityInCart = async (req, res) => {
     // Actualizar el totalPrice del carrito
     const productDetails = await Product.findById(product.productId);
     cart.totalPrice += (quantity - oldQuantity) * productDetails.price;
+    // Evitar que el totalPrice sea negativo
+    if (cart.totalPrice < 0) cart.totalPrice = 0;
     
     await cart.save();
     res.status(200).json({ message: 'Product quantity updated successfully', cart });

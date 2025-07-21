@@ -24,9 +24,9 @@ const orderSchema = new Schema({
     required: true,
     min: 0
   },
-  paymentMethod: {
-    type: String,
-    enum: ['credit_card', 'paypal', 'bank_transfer'],
+  paymentDetails: {
+   type: mongoose.Schema.Types.ObjectId,
+    ref: 'Payment',
     required: true
   },
   status: {
